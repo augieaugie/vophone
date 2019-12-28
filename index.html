@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+ <head>
+	<meta charset="UTF-8"></meta>
+	<title>Vophone</title>
+	<style type="text/css">
+		* {
+			margin: 0px;
+			padding: 0px;
+		}
+
+		section.lar_section {
+			float: left;
+			position: absolute;
+			left:0;
+			top:0;
+			padding-left: 30px;
+			width: 250px;
+			height: 100%;
+			overflow-y:scroll; 
+		}
+
+		section.word_section {
+			float: left;
+			position: absolute;
+			left:0;
+			top:0;
+			padding-left: 30px;
+			margin-left: 280px;
+			width: 250px;
+			height: 100%;
+			overflow-y:scroll; 
+		}
+
+		section.read_section {
+			float: left;
+			position: absolute;
+			left:0;
+			top:0;
+			padding-left: 30px;
+			margin-left: 560px;
+			height: 100%;
+			overflow-y: scroll; 
+		}
+
+		li.reading {
+			font-weight: bold;
+		}
+
+		li ul {
+			margin: 0 0 0 1em;
+			padding: 0;
+		}
+	</style>
+	<script src="jquery.js"></script>
+	<script type="text/javascript">
+		//Parameters
+		var level = eval(getParameter("level"));
+		var range = getParameter("range");
+		var range_s = eval(range.split("-")[0]),
+			range_e = eval(range.split("-")[1]);
+
+
+		//Main
+		$(document).ready(function() {
+			writeLevelAndRange();
+			if(level!=""&&range!="") {
+				$.get("./SVL/level"+level+".csv", csvLoaded);
+			}
+		});
+
+		var csvLoaded = function(csv) {
+			var csvArray = csv.split("\n");
+			$(".word_section").append("<ul></ul>");
+			for(var i=range_s; i<=range_e; i++) {
+				var word = csvArray[i-1].split(',')[0];
+				$(".word_section ul").append("<li>"+word+"</li>");
+			}
+
+			$(".word_section ul li").click(function() {
+				$(".reading").removeClass("reading");
+				$(this).addClass('reading');
+
+				var clicked_word = $(this).text();
+				var uri = "./alc_reibun/level" + level + "/" + clicked_word + ".html"
+				$(".read_section").load(uri).scrollTop(0);
+			});
+		}
+
+
+		//Utilities
+		function getParameter(key) {
+			var str = location.search.split("?");
+			if (str.length < 2) {
+				return "";
+			}
+			
+			var params = str[1].split("&");
+			for (var i = 0; i < params.length; i++) {
+				var keyVal = params[i].split("=");
+				if (keyVal[0] == key && keyVal.length == 2) {
+					return decodeURIComponent(keyVal[1]);
+				}
+			}
+			return "";
+		}
+
+		function writeLevelAndRange() {
+			$(".lar_section").append("<ul class='level'></ul>");
+			for(var l=1; l<=12; l++) {
+				$(".lar_section > ul.level").append("<li>Level" + l + "</li>");
+				$(".lar_section > ul.level > li:last").append("<ul class='range'></ul>");
+				for(var r=100; r<=1000; r+=100) {
+					var li = "<li><a href='"
+							+ location.href.split("?")[0] + "?"
+							+ "level=" + l
+							+ "&range=" + (r-99) + "-" + r
+							+ "'>"
+							+ (r-99) + " ~ " + r
+							+ "</a></li>";
+					$(".lar_section > ul.level > li:last > ul.range").append(li);	
+				}
+			}
+		}
+	</script>
+  </head>
+<body>
+	<div id="wrap">
+		<section class="lar_section">
+		</section>
+		<section class="word_section">
+		</section>
+		<section class="read_section">
+		</section>
+	</div>
+</body>
